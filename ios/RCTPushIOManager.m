@@ -130,10 +130,15 @@ RCT_EXPORT_METHOD(messageCenterViewWillDisappear) {
   [[PushIOManager sharedInstance] messageCenterViewWillDisappear];
 }
 
-RCT_EXPORT_METHOD(declarePreference:(NSString *)key label:(NSString *)label type:(NSInteger)type completionHandler:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(declarePreference:(NSString *)key label:(NSString *)label type:(NSString *)type completionHandler:(RCTResponseSenderBlock)callback) {
   NSError *error = nil;
-  [[PushIOManager sharedInstance] declarePreference:key label:label type:type error:&error];
-  callback(@[error.description?: [NSNull null],@"success"]);
+    if (type == (id)[NSNull null] || type.length == 0) {
+        callback(@[@"Preference type is NULL. Should be \"STRING\" or \"NUMBER\" or \"BOOLEAN\""]);
+    }else{
+        [[PushIOManager sharedInstance] declarePreference:key label:label type:([type isEqualToString:@"STRING"] ? PIOPreferenceTypeString : ([type isEqualToString:@"NUMBER"] ? PIOPreferenceTypeNumeric : PIOPreferenceTypeBoolean)) error:&error];
+        callback(@[error.description?: [NSNull null],@"success"]);
+    }
+  
 }
 
 RCT_EXPORT_METHOD(setBooleanPreference:(NSString *)key forValue:(BOOL)value completionHandler:(RCTResponseSenderBlock)callback) {
@@ -376,6 +381,14 @@ RCT_EXPORT_METHOD(trackConversionEvent:(NSDictionary *)event
                                      completionHandler:^(NSError *error, NSString *response) {
       callback(@[error.description?: [NSNull null], response ?: @"success"]);
   }];
+}
+
+RCT_EXPORT_METHOD(setDelayRegistration:(BOOL)delayRegistration) {
+  [[PushIOManager sharedInstance] setDelayRegistration:delayRegistration];
+}
+
+RCT_EXPORT_METHOD(isDelayRegistration:(RCTResponseSenderBlock)callback) {
+    callback(@[[NSNull null], @([[PushIOManager sharedInstance] delayRegistration])]);
 }
 
 - (BOOL)handleOpenURL:(NSURL *)url {

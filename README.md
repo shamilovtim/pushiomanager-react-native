@@ -51,7 +51,7 @@ Before installing the plugin, you must setup your app to receive push notificati
 - [Generate Auth Key](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/auth-key/) 
 - Log in to the [Responsys Mobile App Developer Console](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/dev-console/login/) and enter your Auth Key and other details for your iOS app.
 - Download the `pushio_config.json` file generated from your credentials.
-- After adding the plugin in your app, copy `PushIOManager.framework` and place it in the plugin `node_modules/pushiomanager-react-native/PushIOManager/` folder. 
+- After adding the plugin in your app, copy `PushIOManager.framework` and place it in the plugin `node_modules/react-native-pushiomanager/PushIOManager/` folder. 
 
 ## Installation
 
@@ -59,7 +59,7 @@ The plugin can be installed with the React Native CLI,
 
 ```shell
 cd <your_react_native_app>
-yarn add https://github.com/oracle/pushiomanager-react-native.git
+yarn add @oracle/react-native-pushiomanager
 ```
 
 ### For iOS
@@ -67,13 +67,13 @@ yarn add https://github.com/oracle/pushiomanager-react-native.git
 
     - Open your React Native App Project `Podfile.` Add  the below line
     
-     `pod 'PushIOManager', :path => '<PATH_TO_node_modules/pushiomanager-react-native/PushIOManager/_Directory>'` after `use_native_modules!`. 
+     `pod 'PushIOManager', :path => '<PATH_TO_node_modules/react-native-pushiomanager/PushIOManager/_Directory>'` after `use_native_modules!`. 
      
      Eg:
     
     ```
     use_native_modules!
-    pod 'PushIOManager', :path => '../node_modules/pushiomanager-react-native/PushIOManager/'
+    pod 'PushIOManager', :path => '../node_modules/react-native-pushiomanager/PushIOManager/'
     
     ```
     - Run `pod install`
@@ -217,15 +217,20 @@ withCompletionHandler:completionHandler];
 {
     [[PushIOManager sharedInstance] userNotificationCenter:center willPresentNotification:notification
 withCompletionHandler:completionHandler];
-}				
+}
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+   [[PushIOManager sharedInstance] openURL:url options:options];
+  return YES;
+}
 ```
 
 
 - For In-App Messages and Rich Push Content follow the below steps :
-  * To Enable Custom URI scheme for displaying In-App Messages and Rich Push content follow the [Step 1](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg/). You don't need to add the code.
+  * To Enable Custom URI scheme for displaying In-App Messages and Rich Push content follow the [Step 1](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg.htm).
   You can find the API key in the `pushio_config.json` that was placed in your Xcode project earlier during setup.
   
-  * Follow  [Step 2](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg/) to  add the required capabilites in your Xcode project for In-App messages. You don't need to add the code.
+  * Follow  [Step 2](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg.htm) to add the required capabilites in your Xcode project for In-App messages.
 
 - For Media Attachments you can follow the following [guide](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/media-attachments/). Copy and paste the code provided in guide in respective files.	
 
@@ -236,7 +241,7 @@ withCompletionHandler:completionHandler];
 The module can be accessed in JS code as follows,
 
 ```javascript
-import PushIOManager from 'react-native-pushiomanager';
+import PushIOManager from '@oracle/react-native-pushiomanager';
 ```
 
 
@@ -253,22 +258,30 @@ import PushIOManager from 'react-native-pushiomanager';
 - Once the SDK is configured, register the app with Responsys,
 	- Combine above steps and use Platform check to detect the platform.        
 
-            ```javascript
-            import { Platform } from 'react-native';
-
-            if (Platform.OS === 'android') {
-                PushIOManager.registerApp(true, (error, response) => {
+	```javascript
+	import { Platform } from 'react-native';
+	
+	if (Platform.OS === 'android') {
+		PushIOManager.registerApp(true, (error, response) => {
                 
-                });
-            } else {
-                PushIOManager.registerForAllRemoteNotificationTypes((error, response) => {
+        	});
+	} else {
+		PushIOManager.registerForAllRemoteNotificationTypes((error, response) => {
                 
-                    PushIOManager.registerApp(true, (error, response) => {
-                            
-                  });  
-                });
-            }
+        		PushIOManager.registerApp(true, (error, response) => {
+			
+			});  
+		});
+	}
             ```
+- Additional APIs (optional)
+
+    iOS Only:
+    - You can delay registration while app is launching or coming to foreground by implementing below API.
+   ```
+   // Implement before `registerForAllRemoteNotificationTypes` calls.
+   PushIOManager.setDelayRegistration(true); 
+   ```
 
 
 ### User Identification
@@ -309,6 +322,14 @@ IAM can also be displayed on-demand using custom triggers.
 	```javascript
 	PushIOManager.trackEvent("custom_event_name", properties);
 	```
+#### iOS
+
+These below steps are required for iOS In-App Messages.
+
+  * To Enable Custom URI scheme for displaying In-App Messages and Rich Push content follow the [Step 1](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg.htm).
+  You can find the API key in the `pushio_config.json` that was placed in your Xcode project earlier during setup.
+  
+  * Follow  [Step 2](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop-mobile/ios/in-app-msg.htm) to add the required capabilites in your Xcode project for In-App messages.
 
 
 ### Message Center
